@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"restuwahyu13/shopping-cart/internal/cmd/api"
+	"restuwahyu13/shopping-cart/internal/cmd/scheduler"
 	cdto "restuwahyu13/shopping-cart/internal/domain/dto/config"
 	cfg "restuwahyu13/shopping-cart/internal/infrastructure/common/config"
 	"restuwahyu13/shopping-cart/internal/infrastructure/common/pkg"
@@ -38,6 +39,9 @@ func main() {
 		pkg.Logrus("fatal", err)
 		return
 	}
+
+	schedule := scheduler.NewScheduler(scheduler.Scheduler{ENV: env, DB: db, RDS: rds})
+	go schedule.ExecuteUpdateOrderStatus()
 
 	app := api.NewApi(api.Api{ENV: env, ROUTER: router, DB: db, RDS: rds})
 	app.Middleware()

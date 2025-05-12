@@ -25,6 +25,12 @@ require (
 )
 
 require (
+	github.com/go-co-op/gocron/v2 v2.16.1 // indirect
+	github.com/jonboulle/clockwork v0.5.0 // indirect
+	github.com/robfig/cron/v3 v3.0.1 // indirect
+)
+
+require (
 	github.com/caarlos0/env v3.5.0+incompatible
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.0 // indirect

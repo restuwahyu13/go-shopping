@@ -21,8 +21,7 @@ func NewPaymentRoute(options PaymentRoute) {
 	handler := PaymentRoute{ROUTER: options.ROUTER, HANDLER: options.HANDLER}
 
 	handler.ROUTER.Route(helper.Version("simulator"), func(r chi.Router) {
-		r.Post("/callback", handler.HANDLER.PaymentCallbackSimulator)
-		r.Post("/webhook", handler.HANDLER.PaymentWebhookSimulator)
+		r.Post("/callback", handler.HANDLER.CallbackSimulatorPayment)
 	})
 
 	handler.ROUTER.Route(helper.Version("payment"), func(r chi.Router) {

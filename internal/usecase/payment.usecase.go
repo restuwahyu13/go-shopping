@@ -17,12 +17,8 @@ func NewPaymentUsecase(options PaymentUsecase) uinf.IPaymentUsecase {
 	return PaymentUsecase{SERVICE: options.SERVICE}
 }
 
-func (u PaymentUsecase) PaymentCallbackSimulator(ctx context.Context, req hdto.Request[any]) hopt.Response {
-	return u.SERVICE.PaymentCallbackSimulator(ctx, req)
-}
-
-func (u PaymentUsecase) PaymentWebhookSimulator(ctx context.Context, req hdto.Request[any]) hopt.Response {
-	return u.SERVICE.PaymentWebhookSimulator(ctx, req)
+func (u PaymentUsecase) CallbackSimulatorPayment(ctx context.Context, req hdto.Request[sdto.CallbackSimulatorPaymentDTO]) hopt.Response {
+	return u.SERVICE.CallbackSimulatorPayment(ctx, req)
 }
 
 func (u PaymentUsecase) SimulatorPayment(ctx context.Context, req hdto.Request[sdto.SimulatorPaymentDTO]) hopt.Response {

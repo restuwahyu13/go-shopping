@@ -8,8 +8,7 @@ import (
 )
 
 type IPaymentUsecase interface {
-	PaymentCallbackSimulator(ctx context.Context, req hdto.Request[any]) hopt.Response
-	PaymentWebhookSimulator(ctx context.Context, req hdto.Request[any]) hopt.Response
+	CallbackSimulatorPayment(ctx context.Context, req hdto.Request[sdto.CallbackSimulatorPaymentDTO]) hopt.Response
 	SimulatorPayment(ctx context.Context, req hdto.Request[sdto.SimulatorPaymentDTO]) hopt.Response
 	GeneratePayment(ctx context.Context, req hdto.Request[sdto.GeneratePaymentDTO]) hopt.Response
 	CheckStatusPayment(ctx context.Context, req hdto.Request[sdto.CheckStatusPaymentDTO]) hopt.Response

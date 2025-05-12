@@ -1,7 +1,13 @@
 package cinf
 
-type IApi interface {
-	Middleware()
-	Router()
-	Listener()
-}
+type (
+	IApi interface {
+		Middleware()
+		Router()
+		Listener()
+	}
+
+	IScheduler interface {
+		ExecuteUpdateOrderStatus()
+	}
+)

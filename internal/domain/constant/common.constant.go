@@ -28,8 +28,10 @@ const (
 	EXPIRED  = "expired"
 	REFUNDED = "refunded"
 	SUCCEED  = "succeed"
+	SUCCESS  = "success"
 
 	WAITING   = "waiting"
+	PAID      = "paid"
 	PROCESS   = "process"
 	PICKUP    = "pick up"
 	DELIVERED = "delivered"

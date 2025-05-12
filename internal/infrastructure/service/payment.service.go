@@ -14,6 +14,7 @@ import (
 	hopt "restuwahyu13/shopping-cart/internal/domain/output/helper"
 	sopt "restuwahyu13/shopping-cart/internal/domain/output/service"
 	"restuwahyu13/shopping-cart/internal/infrastructure/common/helper"
+	"restuwahyu13/shopping-cart/internal/infrastructure/common/pkg"
 	"restuwahyu13/shopping-cart/internal/infrastructure/model"
 	repo "restuwahyu13/shopping-cart/internal/infrastructure/repository"
 	"time"
@@ -37,18 +38,32 @@ func NewPaymentService(options PaymentService) sinf.IPaymentService {
 	}
 }
 
-func (s PaymentService) PaymentCallbackSimulator(ctx context.Context, req hdto.Request[any]) hopt.Response {
+func (s PaymentService) CallbackSimulatorPayment(ctx context.Context, req hdto.Request[sdto.CallbackSimulatorPaymentDTO]) hopt.Response {
 	res := hopt.Response{}
-	res.StatCode = http.StatusOK
-	res.Message = "Payment callback success"
+	parser := helper.NewParser()
 
-	return res
-}
+	key := "CALLBACK_SIMULATOR"
 
-func (s PaymentService) PaymentWebhookSimulator(ctx context.Context, req hdto.Request[any]) hopt.Response {
-	res := hopt.Response{}
+	bodyByte, err := parser.Marshal(req.Body)
+	if err != nil {
+		pkg.Logrus(cons.ERROR, err)
+		res.StatCode = http.StatusPreconditionFailed
+		res.ErrMsg = "Failed to send callback payment"
+
+		return res
+	}
+
+	if err := s.RDS.HSet(key, req.Body.IdempotencyKey, string(bodyByte)); err != nil {
+		pkg.Logrus(cons.ERROR, err)
+		res.StatCode = http.StatusPreconditionFailed
+		res.ErrMsg = "Failed to send callback payment"
+
+		return res
+	}
+
 	res.StatCode = http.StatusOK
-	res.Message = "Payment webhook success"
+	res.Message = "Success to send callback payment"
+	res.Data = req.Body
 
 	return res
 }

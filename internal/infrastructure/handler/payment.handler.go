@@ -23,33 +23,35 @@ func NewPaymentHandler(options PaymentHandler) hdinf.IPaymentHandler {
 	return PaymentHandler{USECASE: options.USECASE}
 }
 
-func (h PaymentHandler) PaymentCallbackSimulator(rw http.ResponseWriter, r *http.Request) {
+func (h PaymentHandler) CallbackSimulatorPayment(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	parser := helper.NewParser()
 
 	res := hopt.Response{}
-	req := hdto.Request[any]{}
+	req := hdto.Request[sdto.CallbackSimulatorPaymentDTO]{}
 
-	if res = h.USECASE.PaymentCallbackSimulator(ctx, req); res.StatCode >= http.StatusBadRequest {
-		if res.StatCode >= http.StatusInternalServerError {
-			pkg.Logrus(cons.ERROR, res.ErrMsg)
-			res.ErrMsg = cons.DEFAULT_ERR_MSG
-		}
+	if err := parser.Decode(r.Body, &req.Body); err != nil {
+		pkg.Logrus(cons.ERROR, err)
+		helper.Api(rw, res)
+		return
+	}
+
+	validator, err := gpc.Validator(req.Body)
+	if err != nil {
+		pkg.Logrus(cons.ERROR, err)
+		helper.Api(rw, res)
+		return
+	}
+
+	if validator != nil {
+		res.StatCode = http.StatusUnprocessableEntity
+		res.Errors = validator.Errors
 
 		helper.Api(rw, res)
 		return
 	}
 
-	helper.Api(rw, res)
-	return
-}
-
-func (h PaymentHandler) PaymentWebhookSimulator(rw http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	res := hopt.Response{}
-	req := hdto.Request[any]{}
-
-	if res = h.USECASE.PaymentWebhookSimulator(ctx, req); res.StatCode >= http.StatusBadRequest {
+	if res = h.USECASE.CallbackSimulatorPayment(ctx, req); res.StatCode >= http.StatusBadRequest {
 		if res.StatCode >= http.StatusInternalServerError {
 			pkg.Logrus(cons.ERROR, res.ErrMsg)
 			res.ErrMsg = cons.DEFAULT_ERR_MSG

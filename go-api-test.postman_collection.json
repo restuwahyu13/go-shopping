@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "9130f709-25a8-4796-9195-d57773d3e6cd",
-		"name": "go-test",
+		"name": "go-api-test",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "5474931"
 	},
@@ -15,7 +15,13 @@
 						{
 							"listen": "test",
 							"script": {
-								"exec": ["let jsonData = JSON.parse(responseBody);", "", "if (jsonData?.data?.token) {", "    pm.environment.set(\"ACCESS_TOKEN\", jsonData?.data?.token);", "}"],
+								"exec": [
+									"let jsonData = JSON.parse(responseBody);",
+									"",
+									"if (jsonData?.data?.token) {",
+									"    pm.environment.set(\"ACCESS_TOKEN\", jsonData?.data?.token);",
+									"}"
+								],
 								"type": "text/javascript",
 								"packages": {}
 							}
@@ -35,8 +41,13 @@
 						},
 						"url": {
 							"raw": "{{API_URL}}/auth/login",
-							"host": ["{{API_URL}}"],
-							"path": ["auth", "login"]
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
 						}
 					},
 					"response": []
@@ -63,7 +74,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"bank_id\": \"31c9539b-db09-4713-9ccf-df9cf80d7bd1\",\n    \"courier_id\": \"7f7d8148-55c7-43c3-a211-6bbeac3afd65\",\n    \"orders\": [\n        {\n            \"product_item_id\": \"23b697ec-0d5e-41b3-a70c-92b487e6eac2\",\n            \"amount\": 89345046,\n            \"qty\": 1,\n            \"notes\": \"MacBook diharapkan packing rapih dan barang sesuai pesanan\",\n            \"action\": \"order\"\n        },\n        {\n            \"product_item_id\": \"f47daf18-40d1-44f4-89f4-6a5955a9c1fe\",\n            \"amount\": 827103,\n            \"qty\": 3,\n            \"notes\": \"google home diharapkan packing rapih dan barang sesuai pesanan\",\n            \"action\": \"order\"\n        },\n        {\n            \"product_item_id\": \"fd50114f-04c0-4d1c-a433-f24fdd20eb6e\",\n            \"amount\": 1200000,\n            \"qty\": 3,\n            \"notes\": \"alexa diharapkan packing rapih dan barang sesuai pesanan\",\n            \"action\": \"order\"\n        }\n    ]\n}",
+							"raw": "[\n    {\n        \"product_item_id\": \"0911792e-a89d-4e39-845b-d35e97ce609f\",\n        \"amount\": 89345046,\n        \"qty\": 1,\n        \"notes\": \"MacBook diharapkan packing rapih dan barang sesuai pesanan\",\n        \"action\": \"order\"\n    },\n    {\n        \"product_item_id\": \"771d60ac-1587-4a60-9ad4-16eb403cb933\",\n        \"amount\": 827103,\n        \"qty\": 3,\n        \"notes\": \"google home diharapkan packing rapih dan barang sesuai pesanan\",\n        \"action\": \"order\"\n    },\n    {\n        \"product_item_id\": \"3c6369a8-4207-46be-8109-28e6ef00e588\",\n        \"amount\": 1200000,\n        \"qty\": 3,\n        \"notes\": \"alexa diharapkan packing rapih dan barang sesuai pesanan\",\n        \"action\": \"order\"\n    }\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -72,8 +83,13 @@
 						},
 						"url": {
 							"raw": "{{API_URL}}/shopping/checkout",
-							"host": ["{{API_URL}}"],
-							"path": ["shopping", "checkout"]
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"shopping",
+								"checkout"
+							]
 						}
 					},
 					"response": []
@@ -95,8 +111,13 @@
 						"header": [],
 						"url": {
 							"raw": "{{API_URL}}/shopping/checkout",
-							"host": ["{{API_URL}}"],
-							"path": ["shopping", "checkout"]
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"shopping",
+								"checkout"
+							]
 						}
 					},
 					"response": []
@@ -114,33 +135,24 @@
 						},
 						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"transaction_id\": \"d37b18a6-5e3a-4355-808d-c40473d68b25\",\n    \"idempotency_key\": \"65e519c8-7ae2-4c20-8652-8344379b7a07\",\n    \"bank\": \"bca\",\n    \"method\": \"va\",\n    \"amount\": 90425046,\n    \"status\": \"succeed\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
 							"raw": "{{API_URL}}/simulator/callback",
-							"host": ["{{API_URL}}"],
-							"path": ["simulator", "callback"]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "WebHookSimulator",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{ACCESS_TOKEN}}",
-									"type": "string"
-								}
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"simulator",
+								"callback"
 							]
-						},
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "{{API_URL}}/simulator/webhook",
-							"host": ["{{API_URL}}"],
-							"path": ["simulator", "webhook"]
 						}
 					},
 					"response": []
@@ -160,10 +172,61 @@
 						},
 						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"payment_code\": \"759869573113\",\n    \"bank\": \"bca\",\n    \"method\": \"va\",\n    \"amount\": 90425046\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
 							"raw": "{{API_URL}}/payment/simulator",
-							"host": ["{{API_URL}}"],
-							"path": ["payment", "simulator"]
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"payment",
+								"simulator"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Payment",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"bank\": \"bca\",\n    \"method\": \"va\",\n    \"amount\": 90425046\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_URL}}/payment/generate",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"payment",
+								"generate"
+							]
 						}
 					},
 					"response": []
@@ -185,8 +248,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{API_URL}}/payment/:id/status",
-							"host": ["{{API_URL}}"],
-							"path": ["payment", ":id", "status"],
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"payment",
+								":id",
+								"status"
+							],
 							"variable": [
 								{
 									"key": "id",
