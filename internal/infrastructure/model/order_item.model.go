@@ -15,7 +15,7 @@ type OrderItemModel struct {
 	Qty            int64           `bun:"qty,notnull" json:"qty"`
 	Amount         int64           `bun:"amount,notnull" json:"amount"`
 	PromotionRules json.RawMessage `bun:"promotion_rules,nullzero,type:jsonb" json:"promotion_rules"`
-	FreeProduct    []string        `bun:"free_product,nullzero" json:"free_product"`
+	FreeProduct    any             `bun:"free_product,nullzero" json:"free_product"`
 	CreatedAt      time.Time       `bun:"created_at,notnull,default:current_timestamp" json:"created_at"`
 	CreatedBy      zero.String     `bun:"created_by,nullzero" json:"created_by"`
 	UpdatedAt      zero.Time       `bun:"updated_at,nullzero" json:"updated_at"`

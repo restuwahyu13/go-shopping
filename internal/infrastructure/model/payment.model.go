@@ -13,11 +13,12 @@ type PaymentModel struct {
 	BankID        string      `bun:"bank_id,notnull" json:"bank_id"`
 	UserID        string      `bun:"user_id,notnull" json:"user_id"`
 	RequestID     string      `bun:"request_id,notnull,unique" json:"request_id"`
+	AccountNumber string      `bun:"account_number,notnull" json:"account_number"`
+	Method        string      `bun:"method,notnull" json:"method"`
 	Amount        int64       `bun:"amount,nullzero" json:"amount"`
 	Status        string      `bun:"status,notnull" json:"status"`
-	AccountNumber int64       `bun:"account_number,nullzero" json:"account_number"`
-	Sender        string      `bun:"sender,nullzero" json:"sender"`
 	VerifiedAt    zero.Time   `bun:"verified_at,nullzero" json:"verified_at"`
+	ExpiredAt     zero.Time   `bun:"expired_at,nullzero" json:"expired_at"`
 	CreatedAt     time.Time   `bun:"created_at,notnull,default:current_timestamp" json:"created_at"`
 	CreatedBy     zero.String `bun:"created_by,nullzero" json:"created_by"`
 	UpdatedAt     zero.Time   `bun:"updated_at,nullzero" json:"updated_at"`

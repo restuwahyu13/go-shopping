@@ -1,12 +1,11 @@
 package handler
 
 import (
-	"context"
 	"net/http"
 	cons "restuwahyu13/shopping-cart/internal/domain/constant"
+	hdto "restuwahyu13/shopping-cart/internal/domain/dto/helper"
 	sdto "restuwahyu13/shopping-cart/internal/domain/dto/services"
 	hdinf "restuwahyu13/shopping-cart/internal/domain/interface/handler"
-	hinf "restuwahyu13/shopping-cart/internal/domain/interface/helper"
 	uinf "restuwahyu13/shopping-cart/internal/domain/interface/usecase"
 	hopt "restuwahyu13/shopping-cart/internal/domain/output/helper"
 	"restuwahyu13/shopping-cart/internal/infrastructure/common/helper"
@@ -23,36 +22,37 @@ func NewShoppingHandler(options ShoppingHandler) hdinf.IShoppingHandler {
 	return ShoppingHandler{USECASE: options.USECASE}
 }
 
-func (h ShoppingHandler) Checkout(rw http.ResponseWriter, r *http.Request) {
-	var (
-		body   sdto.CheckoutDTO = sdto.CheckoutDTO{}
-		res    hopt.Response    = hopt.Response{}
-		ctx    context.Context  = r.Context()
-		parser hinf.IParser     = helper.NewParser()
-	)
+func (h ShoppingHandler) CreateCheckoutCartShopping(rw http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	parser := helper.NewParser()
 
-	if err := parser.Decode(r.Body, &body); err != nil {
+	res := hopt.Response{}
+	req := hdto.Request[[]sdto.CheckoutShoppingDTO]{}
+
+	if err := parser.Decode(r.Body, &req.Body); err != nil {
 		pkg.Logrus(cons.ERROR, err)
 		helper.Api(rw, res)
 		return
 	}
 
-	validator, err := gpc.Validator(body)
-	if err != nil {
-		pkg.Logrus(cons.ERROR, err)
-		helper.Api(rw, res)
-		return
+	for _, body := range req.Body {
+		validator, err := gpc.Validator(body)
+		if err != nil {
+			pkg.Logrus(cons.ERROR, err)
+			helper.Api(rw, res)
+			return
+		}
+
+		if validator != nil {
+			res.StatCode = http.StatusUnprocessableEntity
+			res.Errors = validator.Errors
+
+			helper.Api(rw, res)
+			return
+		}
 	}
 
-	if validator != nil {
-		res.StatCode = http.StatusUnprocessableEntity
-		res.Errors = validator.Errors
-
-		helper.Api(rw, res)
-		return
-	}
-
-	if res = h.USECASE.Checkout(ctx, body); res.StatCode >= http.StatusBadRequest {
+	if res = h.USECASE.CreateCheckoutCartShopping(ctx, req); res.StatCode >= http.StatusBadRequest {
 		if res.StatCode >= http.StatusInternalServerError {
 			pkg.Logrus(cons.ERROR, res.ErrMsg)
 			res.ErrMsg = cons.DEFAULT_ERR_MSG
@@ -66,13 +66,11 @@ func (h ShoppingHandler) Checkout(rw http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func (h ShoppingHandler) CheckoutList(rw http.ResponseWriter, r *http.Request) {
-	var (
-		res hopt.Response   = hopt.Response{}
-		ctx context.Context = r.Context()
-	)
+func (h ShoppingHandler) ListCheckoutCartShopping(rw http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	res := hopt.Response{}
 
-	if res = h.USECASE.CheckoutList(ctx); res.StatCode >= http.StatusBadRequest {
+	if res = h.USECASE.ListCheckoutCartShopping(ctx); res.StatCode >= http.StatusBadRequest {
 		if res.StatCode >= http.StatusInternalServerError {
 			pkg.Logrus(cons.ERROR, res.ErrMsg)
 			res.ErrMsg = cons.DEFAULT_ERR_MSG

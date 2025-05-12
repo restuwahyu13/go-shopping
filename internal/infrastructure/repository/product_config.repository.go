@@ -3,6 +3,7 @@ package repo
 import (
 	"context"
 	hdto "restuwahyu13/shopping-cart/internal/domain/dto/helper"
+	rinf "restuwahyu13/shopping-cart/internal/domain/interface/repository"
 	ropt "restuwahyu13/shopping-cart/internal/domain/output/repository"
 	"restuwahyu13/shopping-cart/internal/infrastructure/common/helper"
 	"restuwahyu13/shopping-cart/internal/infrastructure/model"
@@ -10,23 +11,13 @@ import (
 	"github.com/uptrace/bun"
 )
 
-type (
-	IProductConfigRepository interface {
-		Find() *bun.SelectQuery
-		FindOne() *bun.SelectQuery
-		Create() *bun.InsertQuery
-		Update() *bun.UpdateQuery
-		FindProductConfigByProductId(productId string) (*ropt.FindProductConfigByProductId, error)
-	}
+type productConfigRepository struct {
+	ctx   context.Context
+	db    *bun.DB
+	model *model.ProductConfig
+}
 
-	productConfigRepository struct {
-		ctx   context.Context
-		db    *bun.DB
-		model *model.ProductConfig
-	}
-)
-
-func NewProductConfigRepository(ctx context.Context, db *bun.DB) IProductConfigRepository {
+func NewProductConfigRepository(ctx context.Context, db *bun.DB) rinf.IProductConfigRepository {
 	return productConfigRepository{ctx: ctx, db: db, model: new(model.ProductConfig)}
 }
 

@@ -1,13 +1,19 @@
 package sdto
 
 type (
+	CallbackPaymentDTO struct{}
+
 	PaymentDTO struct {
-		AccountNumber string `json:"account_number" validate:"required,number"`
-		Sender        string `json:"sender" validate:"required"`
-		Amount        int64  `json:"amount" validate:"required,number"`
+		PaymentCode string `json:"payment_code" validate:"required,number"`
 	}
 
-	PaymentStatusDTO struct {
+	GeneratePaymentDTO struct {
+		Bank   string `json:"bank" validate:"required,oneof=bca mandiri bni bri jago qris gopay ovo dana shopee"`
+		Method string `json:"method" validate:"required,oneof=va ewallet transfer qris"`
+		Amount int64  `json:"amount" validate:"required,number"`
+	}
+
+	CheckStatusPaymentDTO struct {
 		ID string `json:"id" validate:"required,uuid4"`
 	}
 )

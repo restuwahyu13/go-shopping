@@ -1,26 +1,18 @@
 package repo
 
 import (
+	rinf "restuwahyu13/shopping-cart/internal/domain/interface/repository"
 	"restuwahyu13/shopping-cart/internal/infrastructure/model"
 
 	"github.com/uptrace/bun"
 )
 
-type (
-	IUserRepository interface {
-		Find() *bun.SelectQuery
-		FindOne() *bun.SelectQuery
-		Create() *bun.InsertQuery
-		Update() *bun.UpdateQuery
-	}
+type userRepository struct {
+	db    *bun.DB
+	model *model.UsersModel
+}
 
-	userRepository struct {
-		db    *bun.DB
-		model *model.UsersModel
-	}
-)
-
-func NewUsersRepository(db *bun.DB) IUserRepository {
+func NewUsersRepository(db *bun.DB) rinf.IUserRepository {
 	return userRepository{db: db, model: new(model.UsersModel)}
 }
 

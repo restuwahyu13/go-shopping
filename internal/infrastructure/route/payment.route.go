@@ -28,6 +28,7 @@ func NewPaymentRoute(options PaymentRoute) {
 	handler.ROUTER.Route(helper.Version("payment"), func(r chi.Router) {
 		r.Use(middleware.Auth(options.ENV.JWT.EXPIRED, options.REDIS))
 		r.Post("/simulator", handler.HANDLER.PaymentSimulator)
-		r.Get("/{id}/status", handler.HANDLER.PaymentStatus)
+		r.Post("/generate", handler.HANDLER.GeneratePayment)
+		r.Get("/{id}/status", handler.HANDLER.CheckStatusPayment)
 	})
 }

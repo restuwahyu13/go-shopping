@@ -2,29 +2,19 @@ package repo
 
 import (
 	"context"
+	rinf "restuwahyu13/shopping-cart/internal/domain/interface/repository"
 	"restuwahyu13/shopping-cart/internal/infrastructure/model"
 
 	"github.com/uptrace/bun"
 )
 
-// func NewBankRepository(db *bun.DB)
+type bankRepository struct {
+	ctx   context.Context
+	db    *bun.DB
+	model *model.BankModel
+}
 
-type (
-	IBankRepository interface {
-		Find() *bun.SelectQuery
-		FindOne() *bun.SelectQuery
-		Create() *bun.InsertQuery
-		Update() *bun.UpdateQuery
-	}
-
-	bankRepository struct {
-		ctx   context.Context
-		db    *bun.DB
-		model *model.BankModel
-	}
-)
-
-func NewBankRepository(ctx context.Context, db *bun.DB) IBankRepository {
+func NewBankRepository(ctx context.Context, db *bun.DB) rinf.IBankRepository {
 	return bankRepository{ctx: ctx, db: db, model: new(model.BankModel)}
 }
 

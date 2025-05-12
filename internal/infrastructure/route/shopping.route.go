@@ -23,7 +23,7 @@ func NewShoppingRoute(options ShoppingRoute) {
 	handler.ROUTER.Route(helper.Version("shopping"), func(r chi.Router) {
 		r.Use(middleware.Auth(options.ENV.JWT.EXPIRED, options.REDIS))
 
-		r.Post("/checkout", handler.HANDLER.Checkout)
-		r.Get("/checkout", handler.HANDLER.CheckoutList)
+		r.Post("/checkout", handler.HANDLER.CreateCheckoutCartShopping)
+		r.Get("/checkout", handler.HANDLER.ListCheckoutCartShopping)
 	})
 }

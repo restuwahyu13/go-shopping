@@ -10,9 +10,9 @@ import (
 type OrderModel struct {
 	bun.BaseModel  `bun:"table:order"`
 	ID             string      `bun:"id,pk,default:uuid_generate_v4()" json:"id"`
-	PaymentID      string      `bun:"payment_id,notnull" json:"payment_id"`
+	PaymentID      string      `bun:"payment_id,nullzero" json:"payment_id"`
 	UserID         string      `bun:"user_id,notnull" json:"user_id"`
-	CourierID      string      `bun:"courier_id,notnull" json:"courier_id"`
+	CourierID      string      `bun:"courier_id,nullzero" json:"courier_id"`
 	InvoiceNumber  string      `bun:"invoice_number,notnull,unique" json:"invoice_number"`
 	Status         string      `bun:"status,notnull" json:"status"`
 	Paid           bool        `bun:"paid,nullzero,default:false" json:"paid"`

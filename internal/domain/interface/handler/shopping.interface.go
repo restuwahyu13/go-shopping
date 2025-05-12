@@ -5,6 +5,6 @@ import (
 )
 
 type IShoppingHandler interface {
-	Checkout(rw http.ResponseWriter, r *http.Request)
-	CheckoutList(rw http.ResponseWriter, r *http.Request)
+	CreateCheckoutCartShopping(rw http.ResponseWriter, r *http.Request)
+	ListCheckoutCartShopping(rw http.ResponseWriter, r *http.Request)
 }

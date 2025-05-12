@@ -7,6 +7,7 @@ import (
 	sdto "restuwahyu13/shopping-cart/internal/domain/dto/services"
 	hinf "restuwahyu13/shopping-cart/internal/domain/interface/helper"
 	pinf "restuwahyu13/shopping-cart/internal/domain/interface/pkg"
+	rinf "restuwahyu13/shopping-cart/internal/domain/interface/repository"
 	hopt "restuwahyu13/shopping-cart/internal/domain/output/helper"
 	ropt "restuwahyu13/shopping-cart/internal/domain/output/repository"
 	"restuwahyu13/shopping-cart/internal/infrastructure/common/helper"
@@ -15,24 +16,14 @@ import (
 	"github.com/uptrace/bun"
 )
 
-type (
-	IProductItemRepository interface {
-		Find() *bun.SelectQuery
-		FindOne() *bun.SelectQuery
-		Create() *bun.InsertQuery
-		Update() *bun.UpdateQuery
-		FindCheckoutProductItemByPromotionRules(trx bun.Tx, promotionConfig *ropt.FindProductConfigByProductId, checkouts []sdto.CheckoutOrderDTO) (*ropt.FindCheckoutProductItemPromotionRules, error)
-	}
+type productItemRepository struct {
+	ctx   context.Context
+	db    *bun.DB
+	rds   pinf.IRedis
+	model *model.ProductItemModel
+}
 
-	productItemRepository struct {
-		ctx   context.Context
-		db    *bun.DB
-		rds   pinf.IRedis
-		model *model.ProductItemModel
-	}
-)
-
-func NewProductItemRepository(ctx context.Context, db *bun.DB) IProductItemRepository {
+func NewProductItemRepository(ctx context.Context, db *bun.DB) rinf.IProductItemRepository {
 	return productItemRepository{ctx: ctx, db: db, model: new(model.ProductItemModel)}
 }
 
@@ -52,7 +43,7 @@ func (r productItemRepository) Update() *bun.UpdateQuery {
 	return r.db.NewUpdate().Model(r.model)
 }
 
-func (r productItemRepository) FindCheckoutProductItemByPromotionRules(trx bun.Tx, promotionConfig *ropt.FindProductConfigByProductId, checkouts []sdto.CheckoutOrderDTO) (*ropt.FindCheckoutProductItemPromotionRules, error) {
+func (r productItemRepository) FindCheckoutProductItemByPromotionRules(trx bun.Tx, promotionConfig *ropt.FindProductConfigByProductId, checkoutShoppings []sdto.CheckoutShoppingDTO) (*ropt.FindCheckoutProductItemPromotionRules, error) {
 	var (
 		productItemModel *model.ProductItemModel                     = new(model.ProductItemModel)
 		res              *ropt.FindCheckoutProductItemPromotionRules = new(ropt.FindCheckoutProductItemPromotionRules)
@@ -61,11 +52,12 @@ func (r productItemRepository) FindCheckoutProductItemByPromotionRules(trx bun.T
 	)
 
 	if rules != nil && promotionConfig.ProductItemID != "" {
-		for _, product := range checkouts {
+		for _, product := range checkoutShoppings {
 			err := trx.NewSelect().Model(productItemModel).Model(productItemModel).
 				Column("id", "sub_brand", "category", "sell_amount").
 				Where("(deleted_at IS NULL AND ready = true AND qty > 0 AND  id = ?)", promotionConfig.ProductItemID).
 				Scan(r.ctx, &productItemModel.ID, &productItemModel.SubBrand, &productItemModel.Category, &productItemModel.SellAmount)
+
 			if err != nil {
 				return nil, err
 			}
@@ -79,8 +71,9 @@ func (r productItemRepository) FindCheckoutProductItemByPromotionRules(trx bun.T
 				res.TotalAmount = int64(calculateAmount)
 
 				err := trx.NewSelect().Model(productItemModel).Column("id").
-					Where("(deleted_at IS NULL AND ready = true AND qty > 0 AND id = ?)", promotionConfig.ProductItemID).
+					Where("(deleted_at IS NULL AND ready = true AND qty > 0 AND id = ? AND id != ?)", rules.OptionOne, promotionConfig.ProductItemID).
 					Scan(r.ctx, &productItemModel.ID)
+
 				if err != nil {
 					return nil, err
 				}
@@ -141,6 +134,7 @@ func (r productItemRepository) FindCheckoutProductItemByPromotionRules(trx bun.T
 					err = trx.NewSelect().Model(productItemModel).Column("id").
 						Where("(deleted_at IS NULL AND ready = true AND qty > 0  AND id != ? AND sub_brand = ? AND category = ?)", promotionConfig.ProductItemID, productItemModel.SubBrand, productItemModel.Category).
 						Order("created_at DESC").Scan(r.ctx, &productItemModel.ID)
+
 					if err != nil {
 						return nil, err
 					}
@@ -167,6 +161,7 @@ func (r productItemRepository) FindCheckoutProductItemByPromotionRules(trx bun.T
 					err = trx.NewSelect().Model(productItemModel).Column("id").
 						Where("(deleted_at IS NULL AND ready = true AND qty > 0  AND id != ? AND sub_brand = ? AND category = ?)", promotionConfig.ProductItemID, productItemModel.SubBrand, productItemModel.Category).
 						Order("created_at DESC").Scan(r.ctx, &productItemModel.ID)
+
 					if err != nil {
 						return nil, err
 					}
@@ -193,6 +188,7 @@ func (r productItemRepository) FindCheckoutProductItemByPromotionRules(trx bun.T
 					err = trx.NewSelect().Model(productItemModel).Column("id").
 						Where("(deleted_at IS NULL AND ready = true AND qty > 0 AND id != ? AND sub_brand != ? AND category != ?)", promotionConfig.ProductItemID, productItemModel.SubBrand, productItemModel.Category).
 						Order("created_at DESC").Scan(r.ctx, &productItemModel.ID)
+
 					if err != nil {
 						return nil, err
 					}
@@ -219,6 +215,7 @@ func (r productItemRepository) FindCheckoutProductItemByPromotionRules(trx bun.T
 					err = trx.NewSelect().Model(productItemModel).Column("id").
 						Where("(deleted_at IS NULL AND ready = true AND qty > 0 AND id != ? AND sub_brand != ? AND category = ?)", promotionConfig.ProductItemID, productItemModel.SubBrand, productItemModel.Category).
 						Order("created_at DESC").Scan(r.ctx, &productItemModel.ID)
+
 					if err != nil {
 						return nil, err
 					}
@@ -277,6 +274,7 @@ func (r productItemRepository) FindCheckoutProductItemByPromotionRules(trx bun.T
 					err = trx.NewSelect().Model(productItemModel).Column("id").
 						Where("(deleted_at IS NULL AND ready = true AND qty > 0  AND id != ? AND sub_brand = ? AND category = ?)", promotionConfig.ProductItemID, productItemModel.SubBrand, productItemModel.Category).
 						Order("created_at DESC").Scan(r.ctx, &productItemModel.ID)
+
 					if err != nil {
 						return nil, err
 					}
@@ -304,6 +302,7 @@ func (r productItemRepository) FindCheckoutProductItemByPromotionRules(trx bun.T
 					err = trx.NewSelect().Model(productItemModel).Column("id").
 						Where("(deleted_at IS NULL AND ready = true AND qty > 0  AND id != ? AND sub_brand = ? AND category = ?)", promotionConfig.ProductItemID, productItemModel.SubBrand, productItemModel.Category).
 						Order("created_at DESC").Scan(r.ctx, &productItemModel.ID)
+
 					if err != nil {
 						return nil, err
 					}
@@ -330,6 +329,7 @@ func (r productItemRepository) FindCheckoutProductItemByPromotionRules(trx bun.T
 					err = trx.NewSelect().Model(productItemModel).Column("id").
 						Where("(deleted_at IS NULL AND ready = true AND qty > 0 AND id != ? AND sub_brand != ? AND category != ?)", promotionConfig.ProductItemID, productItemModel.SubBrand, productItemModel.Category).
 						Order("created_at DESC").Scan(r.ctx, &productItemModel.ID)
+
 					if err != nil {
 						return nil, err
 					}
@@ -356,6 +356,7 @@ func (r productItemRepository) FindCheckoutProductItemByPromotionRules(trx bun.T
 					err = trx.NewSelect().Model(productItemModel).Column("id").
 						Where("(deleted_at IS NULL AND ready = true AND qty > 0 AND id != ? AND sub_brand != ? AND category = ?)", promotionConfig.ProductItemID, productItemModel.SubBrand, productItemModel.Category).
 						Order("created_at DESC").Scan(r.ctx, &productItemModel.ID)
+
 					if err != nil {
 						return nil, err
 					}

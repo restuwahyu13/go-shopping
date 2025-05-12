@@ -2,27 +2,19 @@ package repo
 
 import (
 	"context"
+	rinf "restuwahyu13/shopping-cart/internal/domain/interface/repository"
 	"restuwahyu13/shopping-cart/internal/infrastructure/model"
 
 	"github.com/uptrace/bun"
 )
 
-type (
-	IOrderItemRepository interface {
-		Find() *bun.SelectQuery
-		FindOne() *bun.SelectQuery
-		Create() *bun.InsertQuery
-		Update() *bun.UpdateQuery
-	}
+type orderItemRepository struct {
+	ctx   context.Context
+	db    *bun.DB
+	model *model.OrderItemModel
+}
 
-	orderItemRepository struct {
-		ctx   context.Context
-		db    *bun.DB
-		model *model.OrderItemModel
-	}
-)
-
-func NewOrderItemRepository(ctx context.Context, db *bun.DB) IOrderItemRepository {
+func NewOrderItemRepository(ctx context.Context, db *bun.DB) rinf.IOrderItemRepository {
 	return orderItemRepository{ctx: ctx, db: db, model: new(model.OrderItemModel)}
 }
 

@@ -32,10 +32,10 @@ func NewAuthService(options AuthService) sinf.IAuthService {
 
 func (s AuthService) Login(ctx context.Context, body *sdto.LoginDTO) hopt.Response {
 	res := hopt.Response{}
-	userModel := model.UsersModel{}
+	userModel := new(model.UsersModel)
 
 	userRepository := repo.NewUsersRepository(s.DB)
-	err := userRepository.FindOne().Column("id", "verified_at").Where("email = ?", body.Email).Scan(ctx, &userModel.ID, &userModel.VerifiedAt)
+	err := userRepository.FindOne().Column("id", "verified_at").Where("email = ?", body.Email).Scan(ctx, userModel)
 
 	if err != nil && err != sql.ErrNoRows {
 		res.StatCode = http.StatusInternalServerError

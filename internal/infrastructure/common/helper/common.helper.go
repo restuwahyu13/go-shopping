@@ -5,7 +5,7 @@ import (
 	sdto "restuwahyu13/shopping-cart/internal/domain/dto/services"
 )
 
-func IsCheckoutOrder(items []sdto.CheckoutOrderDTO) bool {
+func IsCheckoutOrder(items []sdto.CheckoutShoppingDTO) bool {
 	for _, item := range items {
 		if item.Action == cons.ORDER && item.Qty > 0 {
 			return true

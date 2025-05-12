@@ -21,6 +21,7 @@ const (
 )
 
 const (
+	CREATED  = "created"
 	PENDING  = "pending"
 	SENT     = "sent"
 	FAILED   = "failed"

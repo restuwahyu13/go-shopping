@@ -1,7 +1,15 @@
 package sdto
 
 type (
-	CheckoutOrderDTO struct {
+	// CheckoutOrderShoppingDTO struct {
+	// 	ProductItemID string `json:"product_item_id" validate:"required,uuid4"`
+	// 	Amount        int64  `json:"amount" validate:"required,number"`
+	// 	Qty           int64  `json:"qty" validate:"required,number"`
+	// 	Notes         string `json:"notes"`
+	// 	Action        string `json:"action" validate:"required,oneof=checkout remove order"`
+	// }
+
+	CheckoutShoppingDTO struct {
 		ProductItemID string `json:"product_item_id" validate:"required,uuid4"`
 		Amount        int64  `json:"amount" validate:"required,number"`
 		Qty           int64  `json:"qty" validate:"required,number"`
@@ -9,13 +17,7 @@ type (
 		Action        string `json:"action" validate:"required,oneof=checkout remove order"`
 	}
 
-	CheckoutDTO struct {
-		BankID    string             `json:"bank_id" validate:"uuid4"`
-		CourierID string             `json:"courier_id" validate:"uuid4"`
-		Orders    []CheckoutOrderDTO `json:"orders" validate:"required"`
-	}
-
-	CheckoutCacheDTO struct {
+	CheckoutShoppingCacheDTO struct {
 		ProductItemID string `json:"product_item_id"`
 		Qty           int64  `json:"qty"`
 	}
