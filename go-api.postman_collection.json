@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "9130f709-25a8-4796-9195-d57773d3e6cd",
-		"name": "iforte-test",
+		"name": "go-test",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "5474931"
 	},
@@ -15,13 +15,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"exec": [
-									"let jsonData = JSON.parse(responseBody);",
-									"",
-									"if (jsonData?.data?.token) {",
-									"    pm.environment.set(\"ACCESS_TOKEN\", jsonData?.data?.token);",
-									"}"
-								],
+								"exec": ["let jsonData = JSON.parse(responseBody);", "", "if (jsonData?.data?.token) {", "    pm.environment.set(\"ACCESS_TOKEN\", jsonData?.data?.token);", "}"],
 								"type": "text/javascript",
 								"packages": {}
 							}
@@ -41,13 +35,8 @@
 						},
 						"url": {
 							"raw": "{{API_URL}}/auth/login",
-							"host": [
-								"{{API_URL}}"
-							],
-							"path": [
-								"auth",
-								"login"
-							]
+							"host": ["{{API_URL}}"],
+							"path": ["auth", "login"]
 						}
 					},
 					"response": []
@@ -83,13 +72,8 @@
 						},
 						"url": {
 							"raw": "{{API_URL}}/shopping/checkout",
-							"host": [
-								"{{API_URL}}"
-							],
-							"path": [
-								"shopping",
-								"checkout"
-							]
+							"host": ["{{API_URL}}"],
+							"path": ["shopping", "checkout"]
 						}
 					},
 					"response": []
@@ -111,13 +95,8 @@
 						"header": [],
 						"url": {
 							"raw": "{{API_URL}}/shopping/checkout",
-							"host": [
-								"{{API_URL}}"
-							],
-							"path": [
-								"shopping",
-								"checkout"
-							]
+							"host": ["{{API_URL}}"],
+							"path": ["shopping", "checkout"]
 						}
 					},
 					"response": []
@@ -137,13 +116,8 @@
 						"header": [],
 						"url": {
 							"raw": "{{API_URL}}/simulator/callback",
-							"host": [
-								"{{API_URL}}"
-							],
-							"path": [
-								"simulator",
-								"callback"
-							]
+							"host": ["{{API_URL}}"],
+							"path": ["simulator", "callback"]
 						}
 					},
 					"response": []
@@ -165,13 +139,8 @@
 						"header": [],
 						"url": {
 							"raw": "{{API_URL}}/simulator/webhook",
-							"host": [
-								"{{API_URL}}"
-							],
-							"path": [
-								"simulator",
-								"webhook"
-							]
+							"host": ["{{API_URL}}"],
+							"path": ["simulator", "webhook"]
 						}
 					},
 					"response": []
@@ -193,13 +162,8 @@
 						"header": [],
 						"url": {
 							"raw": "{{API_URL}}/payment/simulator",
-							"host": [
-								"{{API_URL}}"
-							],
-							"path": [
-								"payment",
-								"simulator"
-							]
+							"host": ["{{API_URL}}"],
+							"path": ["payment", "simulator"]
 						}
 					},
 					"response": []
@@ -221,14 +185,8 @@
 						"header": [],
 						"url": {
 							"raw": "{{API_URL}}/payment/:id/status",
-							"host": [
-								"{{API_URL}}"
-							],
-							"path": [
-								"payment",
-								":id",
-								"status"
-							],
+							"host": ["{{API_URL}}"],
+							"path": ["payment", ":id", "status"],
 							"variable": [
 								{
 									"key": "id",
