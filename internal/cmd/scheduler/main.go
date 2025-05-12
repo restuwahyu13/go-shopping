@@ -50,81 +50,80 @@ func (p Scheduler) ExecuteUpdateOrderStatus() {
 		}
 
 		if resultCallbackSimulator != nil {
-			callbackSimulatorDTO := sdto.CallbackSimulatorPaymentDTO{}
-
 			for k, _ := range resultCallbackSimulator {
+				callbackSimulatorDTO := sdto.CallbackSimulatorPaymentDTO{}
 				result := resultCallbackSimulator[k]
 
 				if err := json.Unmarshal([]byte(result), &callbackSimulatorDTO); err != nil {
 					pkg.Logrus(cons.ERROR, err)
 					return
 				}
-			}
 
-			// NOTE: CHECK IDEMPOTENCY KEY IS EXIST OR NOT
+				// NOTE: CHECK IDEMPOTENCY KEY IS EXIST OR NOT
 
-			paymentModel := new(model.PaymentModel)
-			paymentRepository := repo.NewPaymentRepository(context.Background(), p.DB)
+				paymentModel := new(model.PaymentModel)
+				paymentRepository := repo.NewPaymentRepository(context.Background(), p.DB)
 
-			err = paymentRepository.FindOne().Column("id", "request_id", "expired_at").
-				Where("deleted_at IS NULL AND verified_at IS NOT NULL AND request_id = ? AND status = ?", callbackSimulatorDTO.IdempotencyKey, cons.PENDING).
-				Scan(context.Background(), paymentModel)
+				err = paymentRepository.FindOne().Column("id", "request_id", "expired_at").
+					Where("deleted_at IS NULL AND verified_at IS NOT NULL AND request_id = ? AND status = ?", callbackSimulatorDTO.IdempotencyKey, cons.PENDING).
+					Scan(context.Background(), paymentModel)
 
-			if err != nil && err != sql.ErrNoRows {
-				pkg.Logrus(cons.ERROR, err)
-				return
-
-			} else if err == sql.ErrNoRows {
-				pkg.Logrus(cons.ERROR, err)
-				return
-			}
-
-			// NOTE: CHECK PAYMENT IS EXPIRED OR NOT
-
-			now := time.Now()
-			expired := paymentModel.ExpiredAt.Time.Compare(now)
-
-			if expired == -1 {
-				pkg.Logrus(cons.ERROR, fmt.Sprintf("Payment transaction expired for this payment code %s", paymentModel.RequestID))
-				callbackSimulatorDTO.Status = cons.EXPIRED
-
-				return
-			}
-
-			if paymentModel.Status != cons.PENDING && callbackSimulatorDTO.IdempotencyKey != "" {
-				// NOTE: UPDATE PAYMENT STATUS TO SUCCEED | FAILED
-
-				resultPaymentUpdate, err := p.DB.NewUpdate().Table("payment").Where("id = ?", paymentModel.ID).
-					Set("status = ?", callbackSimulatorDTO.Status, "updated_at = ?", time.Now()).Exec(ctx)
-
-				if err != nil {
+				if err != nil && err != sql.ErrNoRows {
 					pkg.Logrus(cons.ERROR, err)
 					return
 
-				} else if rows, err := resultPaymentUpdate.RowsAffected(); rows < 1 || err != nil {
-					if err == nil {
-						pkg.Logrus(cons.ERROR, "Failed to update payment status")
-						return
-					}
-
+				} else if err == sql.ErrNoRows {
 					pkg.Logrus(cons.ERROR, err)
 					return
 				}
 
-				// NOTE: UPDATE ORDER STATUS TO PAID
+				// NOTE: CHECK PAYMENT IS EXPIRED OR NOT
 
-				if callbackSimulatorDTO.Status == cons.SUCCEED {
-					resultOrderUpdate, err := p.DB.NewUpdate().Table("order").Column("status").
-						Where("deleted_at IS NULL AND paid = false AND payment_id = ? AND status = ?", paymentModel.ID, cons.WAITING).
-						Set("status = ?", cons.PAID, "paid = ?", true, "updated_at = ?", time.Now()).Exec(ctx)
+				now := time.Now()
+				expired := paymentModel.ExpiredAt.Time.Compare(now)
+
+				if expired == -1 {
+					pkg.Logrus(cons.ERROR, fmt.Sprintf("Payment transaction expired for this payment code %s", paymentModel.RequestID))
+					callbackSimulatorDTO.Status = cons.EXPIRED
+
+					return
+				}
+
+				if paymentModel.Status != cons.PENDING && callbackSimulatorDTO.IdempotencyKey != "" {
+					// NOTE: DEFINED TRANSACTION
+
+					trx, err := p.DB.BeginTx(ctx, &sql.TxOptions{})
+					if err != nil {
+						pkg.Logrus(cons.ERROR, err)
+						return
+					}
+
+					defer func() {
+						if err != nil {
+							_ = trx.Rollback()
+						} else {
+							err = trx.Commit()
+							if err != nil {
+								pkg.Logrus(cons.ERROR, err)
+								return
+							}
+						}
+					}()
+
+					// NOTE: UPDATE PAYMENT STATUS TO SUCCEED | FAILED
+
+					resultPaymentUpdate, err := trx.NewUpdate().Table("payment").Where("id = ?", paymentModel.ID).
+						Set("status = ?", callbackSimulatorDTO.Status).
+						Set("updated_at = ?", time.Now()).
+						Exec(ctx)
 
 					if err != nil {
 						pkg.Logrus(cons.ERROR, err)
 						return
 
-					} else if rows, err := resultOrderUpdate.RowsAffected(); rows < 1 || err != nil {
+					} else if rows, err := resultPaymentUpdate.RowsAffected(); rows < 1 || err != nil {
 						if err == nil {
-							pkg.Logrus(cons.ERROR, "Failed to update order status")
+							pkg.Logrus(cons.ERROR, "Failed to update payment status")
 							return
 						}
 
@@ -132,13 +131,37 @@ func (p Scheduler) ExecuteUpdateOrderStatus() {
 						return
 					}
 
-					if _, err := p.RDS.HDel(key, callbackSimulatorDTO.IdempotencyKey); err != nil {
-						pkg.Logrus(cons.ERROR, err)
+					// NOTE: UPDATE ORDER STATUS TO PAID
+
+					if callbackSimulatorDTO.Status == cons.SUCCEED {
+						resultOrderUpdate, err := trx.NewUpdate().Table("order").Where("deleted_at IS NULL AND paid = false AND payment_id = ? AND status = ?", paymentModel.ID, cons.WAITING).
+							Set("status = ?", cons.PAID).
+							Set("paid = ?", true).
+							Set("updated_at = ?", time.Now()).
+							Exec(ctx)
+
+						if err != nil {
+							pkg.Logrus(cons.ERROR, err)
+							return
+
+						} else if rows, err := resultOrderUpdate.RowsAffected(); rows < 1 || err != nil {
+							if err == nil {
+								pkg.Logrus(cons.ERROR, "Failed to update order status")
+								return
+							}
+
+							pkg.Logrus(cons.ERROR, err)
+							return
+						}
+
+						if _, err := p.RDS.HDel(key, callbackSimulatorDTO.IdempotencyKey); err != nil {
+							pkg.Logrus(cons.ERROR, err)
+							return
+						}
+
+						pkg.Logrus(cons.INFO, fmt.Sprintf("Deleted payment idempotency key %s", callbackSimulatorDTO.IdempotencyKey))
 						return
 					}
-
-					pkg.Logrus(cons.INFO, fmt.Sprintf("Deleted payment idempotency key %s", callbackSimulatorDTO.IdempotencyKey))
-					return
 				}
 			}
 		}

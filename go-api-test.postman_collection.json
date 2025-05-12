@@ -74,7 +74,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n    {\n        \"product_item_id\": \"0911792e-a89d-4e39-845b-d35e97ce609f\",\n        \"amount\": 89345046,\n        \"qty\": 1,\n        \"notes\": \"MacBook diharapkan packing rapih dan barang sesuai pesanan\",\n        \"action\": \"order\"\n    },\n    {\n        \"product_item_id\": \"771d60ac-1587-4a60-9ad4-16eb403cb933\",\n        \"amount\": 827103,\n        \"qty\": 3,\n        \"notes\": \"google home diharapkan packing rapih dan barang sesuai pesanan\",\n        \"action\": \"order\"\n    },\n    {\n        \"product_item_id\": \"3c6369a8-4207-46be-8109-28e6ef00e588\",\n        \"amount\": 1200000,\n        \"qty\": 3,\n        \"notes\": \"alexa diharapkan packing rapih dan barang sesuai pesanan\",\n        \"action\": \"order\"\n    }\n]",
+							"raw": "[\n    {\n        \"product_item_id\": \"e5d1aadd-1a56-4283-9844-ee8b4d6e9ef6\",\n        \"courier_id\": \"c807c16b-01ec-42ed-a1d4-9688bafc447c\",\n        \"amount\": 89345046,\n        \"qty\": 1,\n        \"notes\": \"MacBook diharapkan packing rapih dan barang sesuai pesanan\",\n        \"action\": \"order\"\n    },\n    {\n        \"product_item_id\": \"57d7f92b-0427-4e9c-8169-e2779ad5cc34\",\n        \"courier_id\": \"c807c16b-01ec-42ed-a1d4-9688bafc447c\",\n        \"amount\": 827103,\n        \"qty\": 3,\n        \"notes\": \"google home diharapkan packing rapih dan barang sesuai pesanan\",\n        \"action\": \"order\"\n    },\n    {\n        \"product_item_id\": \"a774937d-31bb-496a-ae57-29de452a5691\",\n        \"courier_id\": \"c807c16b-01ec-42ed-a1d4-9688bafc447c\",\n        \"amount\": 1200000,\n        \"qty\": 3,\n        \"notes\": \"alexa diharapkan packing rapih dan barang sesuai pesanan\",\n        \"action\": \"order\"\n    }\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -137,7 +137,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"transaction_id\": \"d37b18a6-5e3a-4355-808d-c40473d68b25\",\n    \"idempotency_key\": \"65e519c8-7ae2-4c20-8652-8344379b7a07\",\n    \"bank\": \"bca\",\n    \"method\": \"va\",\n    \"amount\": 90425046,\n    \"status\": \"succeed\"\n}",
+							"raw": "{\n    \"transaction_id\": \"d37b18a6-5e3a-4355-808d-c40473d68b25\",\n    \"idempotency_key\": \"9ed516cc-2310-4005-9e09-7a551eca60aa\",\n    \"bank\": \"bca\",\n    \"method\": \"va\",\n    \"amount\": 90425046,\n    \"status\": \"succeed\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"

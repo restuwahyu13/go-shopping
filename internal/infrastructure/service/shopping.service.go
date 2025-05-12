@@ -35,28 +35,60 @@ func NewShoppingService(options ShoppingService) sinf.IShoppingService {
 }
 
 func (s ShoppingService) CreateCheckoutCartShopping(ctx context.Context, req hdto.Request[[]sdto.CheckoutShoppingDTO]) hopt.Response {
+	userId := fmt.Sprintf("%v", ctx.Value("user_id"))
 	res := hopt.Response{}
 
+	message := "Checkout product item success"
+	sumTotalAmount := int64(0)
+
 	trx, err := s.DB.BeginTx(ctx, &sql.TxOptions{})
-	defer func(tx bun.Tx, err error) {
-		if err := tx.Rollback(); err != nil {
-			res.StatCode = http.StatusInternalServerError
-			res.ErrMsg = err.Error()
+	if err != nil {
+		res.StatCode = http.StatusInternalServerError
+		res.ErrMsg = err.Error()
+		return res
+	}
+
+	defer func() {
+		if err != nil {
+			_ = trx.Rollback()
 		} else {
-			if err := tx.Commit(); err != nil {
+			err = trx.Commit()
+			if err != nil {
 				res.StatCode = http.StatusInternalServerError
 				res.ErrMsg = err.Error()
 			}
 		}
-	}(trx, err)
+	}()
 
-	userId := fmt.Sprintf("%v", ctx.Value("user_id"))
-	message := "Checkout product item success"
-	sumTotalAmount := int64(0)
+	orderModel := new(model.OrderModel)
+	if helper.IsCheckoutOrder(req.Body) {
+		orderModel.UserID = userId
+		orderModel.InvoiceNumber = fmt.Sprintf("INV-%s", helper.NewRandom().Numeric(8))
+		orderModel.Status = cons.WAITING
+
+		orderResult, err := trx.NewInsert().Model(orderModel).Returning("id").Exec(ctx, &orderModel.ID)
+		if err != nil {
+			res.StatCode = http.StatusInternalServerError
+			res.ErrMsg = err.Error()
+
+			return res
+
+		} else if rows, err := orderResult.RowsAffected(); rows < 1 || err != nil {
+			res.StatCode = http.StatusInternalServerError
+			res.ErrMsg = err.Error()
+
+			if err == nil {
+				res.StatCode = http.StatusPreconditionFailed
+				res.ErrMsg = "Failed to make a order item"
+			}
+
+			return res
+		}
+	}
 
 	for _, order := range req.Body {
-		courierModel := model.CourierModel{}
-		courierRepository := repo.NewProductItemRepository(ctx, s.DB)
+		courierModel := new(model.CourierModel)
+		courierRepository := repo.NewCourierRepository(ctx, s.DB)
 
 		err = courierRepository.FindOne().Column("id").Where("deleted_at IS NULL AND active = true AND id = ?", order.CourierID).Scan(ctx, courierModel)
 		if err != nil && err != sql.ErrNoRows {
@@ -72,7 +104,7 @@ func (s ShoppingService) CreateCheckoutCartShopping(ctx context.Context, req hdt
 			return res
 		}
 
-		productItemModel := model.ProductItemModel{}
+		productItemModel := new(model.ProductItemModel)
 		productItemRepository := repo.NewProductItemRepository(ctx, s.DB)
 
 		err := productItemRepository.FindOne().Column("id", "sell_amount", "qty").Where("deleted_at IS NULL AND ready = true AND id = ?", order.ProductItemID).Scan(ctx, productItemModel)
@@ -128,39 +160,14 @@ func (s ShoppingService) CreateCheckoutCartShopping(ctx context.Context, req hdt
 				return res
 			}
 
-			orderModel := new(model.OrderModel)
-			orderModel.UserID = userId
-			orderModel.InvoiceNumber = fmt.Sprintf("INV-%s", helper.NewRandom().Numeric(8))
-			orderModel.Status = cons.WAITING
-			orderModel.Notes = order.Notes
-			orderModel.OriginAmount = productItemResult.OriginAmount
-			orderModel.DiscountAmount = productItemResult.DiscountAmount
-			orderModel.TotalAmount = productItemResult.TotalAmount
-
-			orderResult, err := trx.NewInsert().Model(orderModel).Returning("id").Exec(ctx, &orderModel.ID)
-			if err != nil {
-				res.StatCode = http.StatusInternalServerError
-				res.ErrMsg = err.Error()
-
-				return res
-
-			} else if rows, err := orderResult.RowsAffected(); rows < 1 || err != nil {
-				res.StatCode = http.StatusInternalServerError
-				res.ErrMsg = err.Error()
-
-				if err == nil {
-					res.StatCode = http.StatusPreconditionFailed
-					res.ErrMsg = "Failed to make a payment order"
-				}
-
-				return res
-			}
-
 			orderItemModel := new(model.OrderItemModel)
 			orderItemModel.OrderID = orderModel.ID
 			orderItemModel.ProductItemID = order.ProductItemID
 			orderItemModel.Qty = order.Qty
-			orderItemModel.Amount = order.Amount
+			orderItemModel.Notes = order.Notes
+			orderItemModel.OriginAmount = productItemResult.OriginAmount
+			orderItemModel.DiscountAmount = productItemResult.DiscountAmount
+			orderItemModel.TotalAmount = productItemResult.TotalAmount
 			orderItemModel.PromotionRules = productConfigResult.PromotionRulesRaw
 
 			if productItemResult.ProductItemID != "" {
@@ -180,7 +187,7 @@ func (s ShoppingService) CreateCheckoutCartShopping(ctx context.Context, req hdt
 
 				if err == nil {
 					res.StatCode = http.StatusPreconditionFailed
-					res.ErrMsg = "Failed to make a payment order"
+					res.ErrMsg = "Failed to make a order item"
 				}
 
 				return res

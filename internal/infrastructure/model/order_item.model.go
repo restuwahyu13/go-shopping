@@ -10,12 +10,15 @@ import (
 
 type OrderItemModel struct {
 	bun.BaseModel  `bun:"table:order_item"`
-	OrderID        string          `bun:"order_id,notnull,unique" json:"order_id"`
+	OrderID        string          `bun:"order_id,notnull" json:"order_id"`
 	ProductItemID  string          `bun:"product_item_id,notnull" json:"product_item_id"`
 	Qty            int64           `bun:"qty,notnull" json:"qty"`
-	Amount         int64           `bun:"amount,notnull" json:"amount"`
+	OriginAmount   int64           `bun:"origin_amount,notnull" json:"origin_amount"`
+	TotalAmount    int64           `bun:"total_amount,notnull" json:"total_amount"`
+	DiscountAmount int64           `bun:"discount_amount,nullzero,default:0" json:"discount_amount"`
 	PromotionRules json.RawMessage `bun:"promotion_rules,nullzero,type:jsonb" json:"promotion_rules"`
 	FreeProduct    any             `bun:"free_product,nullzero" json:"free_product"`
+	Notes          string          `bun:"notes,nullzero" json:"notes"`
 	CreatedAt      time.Time       `bun:"created_at,notnull,default:current_timestamp" json:"created_at"`
 	CreatedBy      zero.String     `bun:"created_by,nullzero" json:"created_by"`
 	UpdatedAt      zero.Time       `bun:"updated_at,nullzero" json:"updated_at"`

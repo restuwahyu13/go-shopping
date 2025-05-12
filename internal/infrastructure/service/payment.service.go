@@ -176,14 +176,36 @@ func (s PaymentService) GeneratePayment(ctx context.Context, req hdto.Request[sd
 	orderModel := new(model.OrderModel)
 	orderRepository := repo.NewOrderRepository(ctx, s.DB)
 
-	err = orderRepository.FindOne().ColumnExpr("SUM(total_amount) as total_amount").Where("deleted_at IS NULL AND paid = false AND user_id = ? AND status = ?", userId, cons.WAITING).Scan(ctx, orderModel)
+	err = orderRepository.FindOne().Column("id").Where("deleted_at IS NULL AND paid = false AND user_id = ? AND status = ?", userId, cons.WAITING).Order("created_at DESC").Scan(ctx, orderModel)
 	if err != nil && err != sql.ErrNoRows {
 		res.StatCode = http.StatusInternalServerError
 		res.ErrMsg = err.Error()
 
 		return res
 
-	} else if err == sql.ErrNoRows || orderModel.TotalAmount != req.Body.Amount {
+	} else if err == sql.ErrNoRows {
+		res.StatCode = http.StatusPreconditionFailed
+		res.ErrMsg = "Failed to make a generate payment"
+
+		return res
+	}
+
+	orderItemModel := new(model.OrderItemModel)
+	orderItemRepository := repo.NewOrderItemRepository(ctx, s.DB)
+
+	err = orderItemRepository.Find().ColumnExpr("SUM(total_amount) as total_amount").Where("deleted_at IS NULL AND order_id = ?", orderModel.ID).Scan(ctx, orderItemModel)
+	if err != nil && err != sql.ErrNoRows {
+		res.StatCode = http.StatusInternalServerError
+		res.ErrMsg = err.Error()
+
+		return res
+	} else if err == sql.ErrNoRows {
+		res.StatCode = http.StatusPreconditionFailed
+		res.ErrMsg = "Failed to make a generate payment"
+
+		return res
+
+	} else if err == sql.ErrNoRows || orderItemModel.TotalAmount != req.Body.Amount {
 		res.StatCode = http.StatusUnprocessableEntity
 		res.ErrMsg = "Miss match order amount"
 
@@ -202,17 +224,23 @@ func (s PaymentService) GeneratePayment(ctx context.Context, req hdto.Request[sd
 
 	} else if err == sql.ErrNoRows {
 		trx, err := s.DB.BeginTx(ctx, &sql.TxOptions{})
-		defer func(tx bun.Tx, err error) {
-			if err := tx.Rollback(); err != nil {
-				res.StatCode = http.StatusInternalServerError
-				res.ErrMsg = err.Error()
+		if err != nil {
+			res.StatCode = http.StatusInternalServerError
+			res.ErrMsg = err.Error()
+			return res
+		}
+
+		defer func() {
+			if err != nil {
+				_ = trx.Rollback()
 			} else {
-				if err := tx.Commit(); err != nil {
+				err = trx.Commit()
+				if err != nil {
 					res.StatCode = http.StatusInternalServerError
 					res.ErrMsg = err.Error()
 				}
 			}
-		}(trx, err)
+		}()
 
 		paymentRequesId := uuid.NewString()
 		paymentInvoiceNumber := helper.NewRandom().Numeric(12)
@@ -246,7 +274,7 @@ func (s PaymentService) GeneratePayment(ctx context.Context, req hdto.Request[sd
 			return res
 		}
 
-		resultOrderUpdate, err := trx.NewUpdate().Table("order").Set("payment_id = ?", paymentModel.ID).Where("deleted_at IS NULL AND paid = false AND user_id = ? AND status = ?", userId, cons.WAITING).Exec(ctx)
+		resultOrderUpdate, err := trx.NewUpdate().Table("order").Where("deleted_at IS NULL AND paid = false AND user_id = ? AND status = ?", userId, cons.WAITING).Set("payment_id = ?", paymentModel.ID).Exec(ctx)
 		if err != nil {
 			res.StatCode = http.StatusInternalServerError
 			res.ErrMsg = err.Error()
