@@ -137,7 +137,7 @@ func (p Scheduler) ExecuteUpdateOrderStatus() {
 						return
 					}
 
-					pkg.Logrus(cons.ERROR, fmt.Sprintf("Deleted payment idempotency key %s", callbackSimulatorDTO.IdempotencyKey))
+					pkg.Logrus(cons.INFO, fmt.Sprintf("Deleted payment idempotency key %s", callbackSimulatorDTO.IdempotencyKey))
 					return
 				}
 			}
