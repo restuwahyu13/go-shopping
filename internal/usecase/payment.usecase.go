@@ -25,8 +25,8 @@ func (u PaymentUsecase) PaymentWebhookSimulator(ctx context.Context, req hdto.Re
 	return u.SERVICE.PaymentWebhookSimulator(ctx, req)
 }
 
-func (u PaymentUsecase) PaymentSimulator(ctx context.Context, req hdto.Request[any]) hopt.Response {
-	return u.SERVICE.PaymentSimulator(ctx, req)
+func (u PaymentUsecase) SimulatorPayment(ctx context.Context, req hdto.Request[sdto.SimulatorPaymentDTO]) hopt.Response {
+	return u.SERVICE.SimulatorPayment(ctx, req)
 }
 
 func (u PaymentUsecase) GeneratePayment(ctx context.Context, req hdto.Request[sdto.GeneratePaymentDTO]) hopt.Response {

@@ -38,30 +38,27 @@ func (s ShoppingService) CreateCheckoutCartShopping(ctx context.Context, req hdt
 	res := hopt.Response{}
 
 	trx, err := s.DB.BeginTx(ctx, &sql.TxOptions{})
-	defer func(err error) {
-		if err != nil {
-			if err := trx.Rollback(); err != nil {
-				res.StatCode = http.StatusInternalServerError
-				res.ErrMsg = err.Error()
-			}
+	defer func(tx bun.Tx, err error) {
+		if err := tx.Rollback(); err != nil {
+			res.StatCode = http.StatusInternalServerError
+			res.ErrMsg = err.Error()
 		} else {
-			if err := trx.Commit(); err != nil {
+			if err := tx.Commit(); err != nil {
 				res.StatCode = http.StatusInternalServerError
 				res.ErrMsg = err.Error()
-
 			}
 		}
-	}(err)
+	}(trx, err)
 
 	userId := fmt.Sprintf("%v", ctx.Value("user_id"))
 	message := "Checkout product item success"
 	sumTotalAmount := int64(0)
 
 	for _, order := range req.Body {
-		productItemModel := model.ProductItemModel{}
-		productItemRepository := repo.NewProductItemRepository(ctx, s.DB)
+		courierModel := model.CourierModel{}
+		courierRepository := repo.NewProductItemRepository(ctx, s.DB)
 
-		err := productItemRepository.FindOne().Column("id", "sell_amount", "qty").Where("deleted_at IS NULL and ready = true AND id = ?", order.ProductItemID).Scan(ctx, &productItemModel.ID, &productItemModel.SellAmount, &productItemModel.Qty)
+		err = courierRepository.FindOne().Column("id").Where("deleted_at IS NULL AND active = true AND id = ?", order.CourierID).Scan(ctx, courierModel)
 		if err != nil && err != sql.ErrNoRows {
 			res.StatCode = http.StatusInternalServerError
 			res.ErrMsg = err.Error()
@@ -70,12 +67,28 @@ func (s ShoppingService) CreateCheckoutCartShopping(ctx context.Context, req hdt
 
 		} else if err == sql.ErrNoRows {
 			res.StatCode = http.StatusNotFound
-			res.ErrMsg = fmt.Sprintf("Product item ID %s not found", order.ProductItemID)
+			res.ErrMsg = fmt.Sprintf("CourierID %s not exist in our system", order.CourierID)
 
 			return res
 		}
 
-		if order.Amount != productItemModel.SellAmount {
+		productItemModel := model.ProductItemModel{}
+		productItemRepository := repo.NewProductItemRepository(ctx, s.DB)
+
+		err := productItemRepository.FindOne().Column("id", "sell_amount", "qty").Where("deleted_at IS NULL AND ready = true AND id = ?", order.ProductItemID).Scan(ctx, productItemModel)
+		if err != nil && err != sql.ErrNoRows {
+			res.StatCode = http.StatusInternalServerError
+			res.ErrMsg = err.Error()
+
+			return res
+
+		} else if err == sql.ErrNoRows {
+			res.StatCode = http.StatusNotFound
+			res.ErrMsg = fmt.Sprintf("ProductItemID %s is not exist in our system", order.ProductItemID)
+
+			return res
+
+		} else if order.Amount != productItemModel.SellAmount {
 			res.StatCode = http.StatusUnprocessableEntity
 			res.ErrMsg = "Invalid product item amount"
 
