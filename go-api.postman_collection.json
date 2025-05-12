@@ -1,0 +1,245 @@
+{
+	"info": {
+		"_postman_id": "9130f709-25a8-4796-9195-d57773d3e6cd",
+		"name": "iforte-test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "5474931"
+	},
+	"item": [
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let jsonData = JSON.parse(responseBody);",
+									"",
+									"if (jsonData?.data?.token) {",
+									"    pm.environment.set(\"ACCESS_TOKEN\", jsonData?.data?.token);",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"restuwahyu705@gmail.com\",\n    \"password\": \"@Qwerty12\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_URL}}/auth/login",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "shopping",
+			"item": [
+				{
+					"name": "checkout",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"bank_id\": \"31c9539b-db09-4713-9ccf-df9cf80d7bd1\",\n    \"courier_id\": \"7f7d8148-55c7-43c3-a211-6bbeac3afd65\",\n    \"orders\": [\n        {\n            \"product_item_id\": \"23b697ec-0d5e-41b3-a70c-92b487e6eac2\",\n            \"amount\": 89345046,\n            \"qty\": 1,\n            \"notes\": \"MacBook diharapkan packing rapih dan barang sesuai pesanan\",\n            \"action\": \"order\"\n        },\n        {\n            \"product_item_id\": \"f47daf18-40d1-44f4-89f4-6a5955a9c1fe\",\n            \"amount\": 827103,\n            \"qty\": 3,\n            \"notes\": \"google home diharapkan packing rapih dan barang sesuai pesanan\",\n            \"action\": \"order\"\n        },\n        {\n            \"product_item_id\": \"fd50114f-04c0-4d1c-a433-f24fdd20eb6e\",\n            \"amount\": 1200000,\n            \"qty\": 3,\n            \"notes\": \"alexa diharapkan packing rapih dan barang sesuai pesanan\",\n            \"action\": \"order\"\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_URL}}/shopping/checkout",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"shopping",
+								"checkout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "checkout list",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_URL}}/shopping/checkout",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"shopping",
+								"checkout"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "payment",
+			"item": [
+				{
+					"name": "Callback Simulator",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{API_URL}}/simulator/callback",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"simulator",
+								"callback"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "WebHookSimulator",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{API_URL}}/simulator/webhook",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"simulator",
+								"webhook"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Payment Simulator",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{API_URL}}/payment/simulator",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"payment",
+								"simulator"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check Payment Status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_URL}}/payment/:id/status",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"payment",
+								":id",
+								"status"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "af4a00ae-2870-4433-8c26-e8647a811544"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
